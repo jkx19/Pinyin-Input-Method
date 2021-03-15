@@ -7,6 +7,7 @@ from zhon.hanzi import punctuation
 
 # 计算状态转移的概率，没有做拉普拉斯平滑，没有出现的字符的转出概率全部为0
 # 得到matrix.json，且matrix[i][j]表示P(j|i)
+# bi-gram
 
 charlist = []
 charin = open('../pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
