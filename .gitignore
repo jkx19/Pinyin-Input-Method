@@ -3,3 +3,5 @@
 拼音输入法编程作业_2017.pdf
 /.vscode/
 /data/matrix.json
+/data/matrix_[0-9].json
+/data/occur_[0-9].json
