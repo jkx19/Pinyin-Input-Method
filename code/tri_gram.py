@@ -68,12 +68,15 @@ def convert_2(pinlist:list) -> list:
         possen.append({}) # possen[i] == {}
         for cur in dic[pinlist[i]]:
             pcur = -float('inf')
-            las = ''
+            las0 = ''
+            las1 = ''
             for la in possen[i-1].keys():
                 if possen[i-1][la][0] + matrix2[la][cur] > pcur:
                     pcur = possen[i-1][la][0] + matrix2[la][cur]
-                    las = la
-            possen[i][cur] = [pcur, las]
+                    las1 = la
+                    las0 = possen[i-1][las1][1]
+            possen[i][cur] = [pcur, las1]
+            possen[i-1][las1][1] = las0
 
     lastchar = ''
     maxpos = float('-inf')
@@ -112,15 +115,18 @@ def convert_3(pinlist:list) -> list:
         possen.append({}) # possen[i] == {}
         for cur in dic[pinlist[i]]:
             pcur = -float('inf')
-            las = ''
+            las0 = ''
+            las1 = ''
             for la0 in possen[i-2].keys():
                 for la1 in possen[i-1].keys():
                     probability = laplacian3(la0, la1, cur)
                     prob = probability + possen[i-1][la1][0] + possen[i-2][la0][0]
                     if prob > pcur:
                         pcur = prob
-                        las = la1
-            possen[i][cur] = [pcur, las]
+                        las1 = la1
+                        las0 = la0
+            possen[i][cur] = [pcur, las1]
+            # possen[i-1][las1][1] = las0
 
     lastchar = ''
     maxpos = float('-inf')

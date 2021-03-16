@@ -5,3 +5,5 @@
 /data/matrix.json
 /data/matrix_[0-9].json
 /data/occur_[0-9].json
+/input/
+/trainset/

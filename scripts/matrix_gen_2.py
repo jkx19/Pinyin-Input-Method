@@ -23,6 +23,7 @@ for ch in charlist:
     for cha in charlist:
         trma[ch][cha] = 0
 
+# the following part is specific for sina news
 months = ['02','04','05','06','07','08','09','10','11']
 for month in months:
     newsf = open(f'../sina_news_gbk/2016-{month}.txt', 'r', encoding='gbk')
