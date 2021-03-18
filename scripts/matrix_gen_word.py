@@ -35,8 +35,8 @@ trma = defaultdict(dict)
 emg = {}
 for ch in charlist + wordlist:
     emg[ch] = 0
-    for cha in charlist + wordlist:
-        trma[ch][cha] = 0
+    # for cha in charlist + wordlist:
+    #     trma[ch][cha] = 0
 
 # the following part is specific for sina news
 months = ['02','04','05','06','07','08','09','10','11']
@@ -62,18 +62,26 @@ for month in months:
             while i < len(news) - 1:
                 if news[i]+news[i+1] in wordset:
                     if i < len(news) - 3 and news[i+2]+news[i+3] in wordset:
+                        if news[i+2]+news[i+3] not in trma[news[i]+news[i+1]].keys():
+                            trma[news[i]+news[i+1]][news[i+2]+news[i+3]] = 0
                         trma[news[i]+news[i+1]][news[i+2]+news[i+3]] += 1
                         emg[news[i]+news[i+1]] += 1
                     elif i < len(news)-2 and news[i+2] in charset:
+                        if news[i+2] not in trma[news[i]+news[i+1]].keys():
+                            trma[news[i]+news[i+1]][news[i+2]] = 0
                         trma[news[i]+news[i+1]][news[i+2]] += 1
                         emg[news[i]+news[i+1]] += 1
                     i += 2
                 
                 elif i< len(news)-2 and news[i] in charset:
                     if i < len(news)-2 and news[i+1]+news[i+2] in wordset:
+                        if news[i+1]+news[i+2] not in trma[news[i]].keys():
+                            trma[news[i]][news[i+1]+news[i+2]] = 0
                         trma[news[i]][news[i+1]+news[i+2]] += 1
                         emg[news[i]] += 1
                     elif news[i+1] in charset:
+                        if news[i+1] not in trma[news[i]].keys():
+                            trma[news[i]][news[i+1]] = 0
                         trma[news[i]][news[i+1]] += 1
                         emg[news[i]] += 1
                     i += 1

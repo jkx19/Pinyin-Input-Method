@@ -26,7 +26,8 @@ p2w = json.load(wordf)
 wordf.close()
 wordset = set(p2w.keys())
 
-alpha = 1e-20
+alpha = 1e-30
+beta = 1e-70
 
 def laplacian(matrix:dict):
     for la in matrix.keys():
@@ -42,6 +43,25 @@ def laplacian(matrix:dict):
 
     # return matrix
 
+def probability(w0, w1):
+    # if occur[w0] == 0:
+    #     return math.log(alpha)
+    # else:
+    #     for cur in matrix[la].keys():
+    #         if matrix[la][cur] == 0:
+    #             matrix[la][cur] = math.log(alpha*(occur[cur]+alpha))
+    #         else:
+    #             matrix[la][cur] = math.log(alpha*occur[cur] + (1-alpha)*matrix[la][cur])
+    if occur[w0] == 0:
+        p = beta + alpha*occur[w1]
+    else:
+        if w1 not in matrix[w0].keys():
+            p = beta
+        else:
+            p = alpha*occur[w1] + matrix[w0][w1]
+    return math.log(p)
+
+
 
 # Laplacian smoothing
 def convert(pinlist:list) -> deque:
@@ -50,29 +70,17 @@ def convert(pinlist:list) -> deque:
     possen = []
     for i in range(t):
         possen.append({})
-    # for p in p2c[pinlist[0]]:
-    #     possen.append({})
-    #     possen[0][p] = [matrix['e'][p], '']
-    
-    # for i in range(1,t):
-    #     possen.append({}) # possen[i] == {}
-    #     for cur in p2c[pinlist[i]]:
-    #         pcur = -float('inf')
-    #         las = ''
-    #         for la in possen[i-1].keys():
-    #             if possen[i-1][la][0] + matrix[la][cur] > pcur:
-    #                 pcur = possen[i-1][la][0] + matrix[la][cur]
-    #                 las = la
-    #         possen[i][cur] = [pcur, las]
 
     i = 0
     while i < t:
         if i == 0:
             if i < t-1 and pinlist[0]+' '+pinlist[1] in wordset:
                 for word in p2w[pinlist[0]+' '+pinlist[1]]:
-                    possen[1][word] = (matrix['b'][word], -1, 'b')
+                    # possen[1][word] = (matrix['b'][word], -1, 'b')
+                    possen[1][word] = [probability('b', word), -1, 'b']
             for ch in p2c[pinlist[0]]:
-                possen[0][ch] = [matrix['e'][ch], -1, 'b']
+                # possen[0][ch] = [matrix['e'][ch], -1, 'b']
+                possen[0][ch] = [probability('b', ch), -1, 'b']
 
         else:
             if i < t-1:
@@ -81,8 +89,10 @@ def convert(pinlist:list) -> deque:
                         pcur = -float('inf')
                         las = ''
                         for la in possen[i-1].keys():
-                            if possen[i-1][la][0] + matrix[la][word] > pcur:
-                                pcur = possen[i-1][la][0] + matrix[la][word]
+                            p = probability(la,word)
+                            # if possen[i-1][la][0] + matrix[la][word] > pcur:
+                            if possen[i-1][la][0] + p> pcur:
+                                pcur = possen[i-1][la][0] + p
                                 las = la
                         possen[i+1][word] = [pcur, i-1, las]
         
@@ -90,8 +100,11 @@ def convert(pinlist:list) -> deque:
                 pcur = -float('inf')
                 las = ''
                 for la in possen[i-1].keys():
-                    if possen[i-1][la][0] + matrix[la][cur] > pcur:
-                        pcur = possen[i-1][la][0] + matrix[la][cur]
+                    p = probability(la, cur)
+                    # if possen[i-1][la][0] + matrix[la][cur] > pcur:
+                    if possen[i-1][la][0] + p > pcur:
+                        # pcur = possen[i-1][la][0] + matrix[la][cur]
+                        pcur = possen[i-1][la][0] + p
                         las = la
                 possen[i][cur] = [pcur, i - 1, las]
 
@@ -116,7 +129,7 @@ def convert(pinlist:list) -> deque:
     
     return result
 
-laplacian(matrix)
+# laplacian(matrix)
 fin = open('../input/input.txt', 'r')
 line = fin.readline()
 while line != '':
