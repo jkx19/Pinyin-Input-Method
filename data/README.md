@@ -19,3 +19,7 @@ A two-layer dict indexed by characters. matrix[last][current] stands for P(curre
 ## occur.json
 
 A dict, with keys of characters and values the number of its key's occurence in the dataset
+
+## word
+
+All the data for the word model

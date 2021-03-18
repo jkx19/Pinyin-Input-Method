@@ -19,3 +19,7 @@ Generate a matrix for 3-gram
 ## train,sh
 
 Run it to automatically generate all the data
+
+## makeword.py
+
+Generate the word list base on mutual presence probability
