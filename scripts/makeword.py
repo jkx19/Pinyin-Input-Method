@@ -38,31 +38,49 @@ for ch in charlist:
         nma[ch][cha] = 0
 
 # the following part is specific for sina news
-months = ['02','04','05','06','07','08','09','10','11']
-for month in months:
-    newsf = open(f'../sina_news_gbk/2016-{month}.txt', 'r', encoding='gbk')
-    newsline = newsf.readline()
-    print(f'processing news in 2016-{month}')
-    k = 0
-    while newsline != '':
-        newsj = json.loads(newsline.strip())
-        newst = newsj['html'] + '，' + newsj['title']
-        newst = re.sub('[0-9]+|[a-z]+|[A-Z]+|\s+', '，', newst)
-        newsl = re.split('[%s%s]+' %(punctuation,string.punctuation), newst)
+# months = ['02','04','05','06','07','08','09','10','11']
+# for month in months:
+#     newsf = open(f'../sina_news_gbk/2016-{month}.txt', 'r', encoding='gbk')
+#     newsline = newsf.readline()
+#     print(f'processing news in 2016-{month}')
+#     k = 0
+#     while newsline != '':
+#         newsj = json.loads(newsline.strip())
+#         newst = newsj['html'] + '，' + newsj['title']
+#         newst = re.sub('[0-9]+|[a-z]+|[A-Z]+|\s+', '，', newst)
+#         newsl = re.split('[%s%s]+' %(punctuation,string.punctuation), newst)
         
-        for news in newsl:
-            for i in range(len(news) - 1):
-                if news[i] in charset and news[i + 1] in charset:
-                    trma[news[i]][news[i+1]] += 1
-                    nma[news[i+1]][news[i]] += 1
-                    emg_b[news[i]] += 1
-                    emg_a[news[i+1]] += 1
+#         for news in newsl:
+#             for i in range(len(news) - 1):
+#                 if news[i] in charset and news[i + 1] in charset:
+#                     trma[news[i]][news[i+1]] += 1
+#                     nma[news[i+1]][news[i]] += 1
+#                     emg_b[news[i]] += 1
+#                     emg_a[news[i+1]] += 1
 
-        k = k + 1
-        if k % 1000 == 0:
-            print(f'processing the {k}th news of 2016-{month}')
-        newsline = newsf.readline()
-    newsf.close()
+#         k = k + 1
+#         if k % 1000 == 0:
+#             print(f'processing the {k}th news of 2016-{month}')
+#         newsline = newsf.readline()
+#     newsf.close()
+
+newsf = open('../trainset/sina_news.txt', 'r')
+news = newsf.readline()
+k = 0
+while news != '':
+    news = news.strip()
+    for i in range(len(news) - 1):
+        if news[i] in charset and news[i + 1] in charset:
+            trma[news[i]][news[i+1]] += 1
+            nma[news[i+1]][news[i]] += 1
+            emg_b[news[i]] += 1
+            emg_a[news[i+1]] += 1
+    k = k + 1
+    if k % 10000 == 0:
+        print(f'processing the {k}th line')
+    news = newsf.readline()
+newsf.close()
+
 
 wordlist = []
 
@@ -120,7 +138,7 @@ for c0 in charlist:
             if len(wordlist) > numwords:
                 heapq.heappop(wordlist)
 
-outf = open('../data/word/wordlist.json', 'w')
+outf = open('../data/word/wordlist1.json', 'w')
 dictin = open('../data/char2pin.json', 'r')
 char2pin = json.load(dictin)
 dictin.close()
