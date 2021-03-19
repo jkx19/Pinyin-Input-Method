@@ -8,5 +8,5 @@
 /data/
 /input/
 /trainset/
-output/
-！input/output.txt
+/output/
+!/input/

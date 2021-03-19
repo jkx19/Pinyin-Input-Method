@@ -1,5 +1,6 @@
 import os
 import sys
+# sys.stdout = open('output/result.txt', 'a')
 
 fin = open('input/output.txt', 'r')
 fout = open('output/output.txt', 'r')
@@ -30,6 +31,4 @@ while il != '':
 fin.close()
 fout.close()
 
-ref = open('output/result.txt', 'a')
-ref.write(str(sys.argv[1:]) + ' ' + str(r/(r+w)) + '\n')
-ref.close()
+print(str(sys.argv[1:]) + ' ' + str(r/(r+w)) + '\n')
