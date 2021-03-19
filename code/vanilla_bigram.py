@@ -3,6 +3,7 @@ import re
 import json
 import sys
 import math
+sys.stdout = open('../output/output.txt', 'w')
 
 # 最基本的二元组与viterbi算法
 

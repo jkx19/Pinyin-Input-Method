@@ -8,3 +8,5 @@
 /data/
 /input/
 /trainset/
+/output/
+!/input/
