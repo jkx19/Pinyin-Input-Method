@@ -9,6 +9,8 @@ from collections import deque
 # Considering common words in news
 # b, e stand for begin and end.
 
+sys.stdout = open('../output/output.txt', 'w')
+
 mat_in = open('../data/word/matrix_w.json', 'r')
 matrix = json.load(mat_in)
 mat_in.close()
@@ -127,6 +129,7 @@ def convert(pinlist:list) -> deque:
         # i = possen[i][lastchar][1]
         result.appendleft(lastchar)
     
+    result.popleft() # pop the 'b' token
     return result
 
 # laplacian(matrix)
@@ -140,7 +143,7 @@ while line != '':
     print('')
     result = convert(pinlist)
     for char in result:
-        print(char, end=' ')
+        print(char, end='')
     print('')
 
     line = fin.readline()
