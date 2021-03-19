@@ -3,8 +3,9 @@ import re
 import json
 import sys
 import math
+sys.stdout = open('../output/output.txt', 'w')
 
-# 最基本的二元组与viterbi算法
+# tri-gram, also using HMM and viterbi as basic model and algorithm
 
 mat2_in = open('../data/matrix.json', 'r')
 matrix2 = json.load(mat2_in)
