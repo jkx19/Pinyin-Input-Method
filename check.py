@@ -31,4 +31,4 @@ while il != '':
 fin.close()
 fout.close()
 
-print(str(sys.argv[1:]) + ' ' + str(r/(r+w)) + '\n')
+print(str(r/(r+w)))
