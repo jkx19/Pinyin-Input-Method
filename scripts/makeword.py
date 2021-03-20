@@ -8,12 +8,9 @@ import heapq
 import math
 import sys
 
+# optimized parameters
 numwords = 10000
 w = 8
-
-# numwords = int(sys.argv[1])
-# w = int(sys.argv[2])
-# print(sys.argv)
 
 # 计算状态转移的概率，没有做拉普拉斯平滑，没有出现的字符的转出概率全部为0
 # 得到matrix.json，且matrix[i][j]表示P(j|i)
@@ -36,33 +33,6 @@ for ch in charlist:
     for cha in charlist:
         trma[ch][cha] = 0
         nma[ch][cha] = 0
-
-# the following part is specific for sina news
-# months = ['02','04','05','06','07','08','09','10','11']
-# for month in months:
-#     newsf = open(f'../sina_news_gbk/2016-{month}.txt', 'r', encoding='gbk')
-#     newsline = newsf.readline()
-#     print(f'processing news in 2016-{month}')
-#     k = 0
-#     while newsline != '':
-#         newsj = json.loads(newsline.strip())
-#         newst = newsj['html'] + '，' + newsj['title']
-#         newst = re.sub('[0-9]+|[a-z]+|[A-Z]+|\s+', '，', newst)
-#         newsl = re.split('[%s%s]+' %(punctuation,string.punctuation), newst)
-        
-#         for news in newsl:
-#             for i in range(len(news) - 1):
-#                 if news[i] in charset and news[i + 1] in charset:
-#                     trma[news[i]][news[i+1]] += 1
-#                     nma[news[i+1]][news[i]] += 1
-#                     emg_b[news[i]] += 1
-#                     emg_a[news[i+1]] += 1
-
-#         k = k + 1
-#         if k % 1000 == 0:
-#             print(f'processing the {k}th news of 2016-{month}')
-#         newsline = newsf.readline()
-#     newsf.close()
 
 newsf = open('../trainset/sina_news.txt', 'r')
 news = newsf.readline()
@@ -97,22 +67,6 @@ for ch in charlist:
     if emg_a[ch] != 0:
         for c in nma[ch].keys():
             nma[ch][c] /= emg_a[ch]
-
-# trmaf = open('../data/word/matrix.json', 'r')
-# trma = json.load(trmaf)
-# trmaf.close()
-
-# nmaf = open('../data/word/rematrix.json', 'r')
-# nma = json.load(nmaf)
-# nmaf.close()
-
-# ebin = open('../data/occur.json', 'r')
-# emg_b = json.load(ebin)
-# ebin.close()
-
-# eain = open('../data/reoccur.json', 'r')
-# emg_a = json.load(eain)
-# eain.close()
 
 charnum = 0
 for ch in emg_a.keys():
@@ -155,22 +109,3 @@ for py in out.keys():
 
 json.dump(out, outf)
 outf.close
-
-
-
-
-# trmaout = open('../data/word/matrix.json', 'w')
-# json.dump(trma, trmaout)
-# trmaout.close
-
-# nmaout = open('../data/word/rematrix.json', 'w')
-# json.dump(nma, nmaout)
-# nmaout.close
-
-# eout = open('../data/occur.json', 'w')
-# json.dump(emg_b, eout)
-# eout.close()
-
-# aout = open('../data/reoccur.json', 'w')
-# json.dump(emg_a, aout)
-# aout.close()
