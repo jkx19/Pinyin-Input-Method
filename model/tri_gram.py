@@ -10,6 +10,8 @@ from pathlib import Path
 
 def mat_gen_3():
     # n = 3
+    sys.stdout = sys.__stdout__
+    
     charlist = []
     charin = open('pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
     c = charin.read()
@@ -60,7 +62,9 @@ def mat_gen_3():
     json.dump(emg, eout)
     eout.close()
 
-def trigram():
+def trigram(inputf, outputf):
+
+    sys.stdout = open('output/'+outputf, 'w')
     mat2_in = open('data/matrix.json', 'r')
     matrix2 = json.load(mat2_in)
     mat2_in.close()
@@ -199,7 +203,7 @@ def trigram():
 
 
 
-    fin = open('input/input.txt', 'r')
+    fin = open('input/'+inputf, 'r')
     line = fin.readline()
     while line != '':
         pinlist = re.split(' ', line.strip())
@@ -225,12 +229,8 @@ class tri_gram:
     def gen_mat(self):
         mat_gen_3()
 
-    def get_result(self):
+    def get_result(self, inputf, outputf):
         matf = Path('data/matrix_3.json')
         if not matf.is_file():
-            # self.gen_mat()
-            print('no')
-        else:
-            pass
-            # print('yes')
-        trigram()
+            self.gen_mat()
+        trigram(inputf, outputf)

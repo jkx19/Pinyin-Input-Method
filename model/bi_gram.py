@@ -11,6 +11,8 @@ from pathlib import Path
 # sys.stdout = open('../output/output.txt', 'w')
 
 def mat_gen_2():
+    sys.stdout = sys.__stdout__
+
     charlist = []
     charin = open('../pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
     c = charin.read()
@@ -60,7 +62,8 @@ def mat_gen_2():
     json.dump(emg, eout)
     eout.close()
 
-def bigram():
+def bigram(inputf, outputf):
+    sys.stdout = open('output/'+outputf, 'w')
     mat_in = open('data/matrix.json', 'r')
     matrix = json.load(mat_in)
     mat_in.close()
@@ -125,7 +128,7 @@ def bigram():
         return result
 
     laplacian(matrix)
-    fin = open('input/input.txt', 'r')
+    fin = open('input/'+inputf, 'r')
     line = fin.readline()
     while line != '':
         pinlist = re.split(' ', line.strip())
@@ -148,13 +151,9 @@ class bi_gram:
     def gen_mat(self):
         mat_gen_2()
 
-    def get_result(self):
+    def get_result(self, inputf, outputf):
         matf = Path('data/matrix.json')
         if not matf.is_file():
             self.gen_mat()
-            # print('no')
-        else:
-            sys.stdout = sys.__stdout__
-            print('yes')
-        bigram()
+        bigram(inputf, outputf)
         

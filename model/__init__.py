@@ -1,6 +1,6 @@
-import sys
+# import sys
 
-if __name__ == '__main__':
-    pass
-else:
-    sys.stdout = open('output/output.txt', 'w')
+# if __name__ == '__main__':
+#     pass
+# else:
+#     sys.stdout = open('output/output.txt', 'w')

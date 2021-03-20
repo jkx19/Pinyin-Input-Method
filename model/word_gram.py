@@ -14,6 +14,7 @@ from collections import deque
 def gen_word():
     numwords = 10000
     w = 8
+    sys.stdout = sys.__stdout__
 
     # 计算状态转移的概率，没有做拉普拉斯平滑，没有出现的字符的转出概率全部为0
     # 得到matrix.json，且matrix[i][j]表示P(j|i)
@@ -119,6 +120,8 @@ def mat_gen_word():
     # bi-gram
     # 增加了开始标识'b'以及结束标识'e'
 
+    sys.stdout = sys.__stdout__
+
     charlist = []
     charin = open('pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
     c = charin.read()
@@ -203,10 +206,11 @@ def mat_gen_word():
     json.dump(emg, eout)
     eout.close()
 
-def wordgram():
+def wordgram(inputf, outputf):
     # Basic bi-gram model with viterbi algorithm
     # Considering common words in news
     # b, e stand for begin and end.
+    sys.stdout = open('output/'+outputf, 'w')
 
     mat_in = open('data/word/matrix_w.json', 'r')
     matrix = json.load(mat_in)
@@ -249,8 +253,6 @@ def wordgram():
             else:
                 p = alpha*occur[w1] + matrix[w0][w1]
         return math.log(p)
-
-
 
     # Laplacian smoothing
     def convert(pinlist:list) -> deque:
@@ -314,7 +316,7 @@ def wordgram():
         return result
 
     # laplacian(matrix)
-    fin = open('input/input.txt', 'r')
+    fin = open('input/'+inputf, 'r')
     line = fin.readline()
     while line != '':
         pinlist = re.split(' ', line.strip())
@@ -340,12 +342,8 @@ class word_gram:
     def gen_mat(self):
         mat_gen_word()
 
-    def get_result(self):
+    def get_result(self, inputf, outputf):
         matf = Path('data/word/matrix_w.json')
         if not matf.is_file():
             self.gen_mat()
-            # print('no')
-        else:
-            pass
-            # print('yes')
-        wordgram()
+        wordgram(inputf, outputf)
