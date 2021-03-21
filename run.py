@@ -1,7 +1,7 @@
 import sys
+import os
 
-
-def main(args):
+def get_result(args):
     from model.bi_gram import bi_gram
     from model.tri_gram import tri_gram
     from model.word_gram import word_gram
@@ -27,12 +27,10 @@ def main(args):
 
     k.get_result(inputf, outputf)
 
-
-
 import argparse
 parser = argparse.ArgumentParser(description='Run the pinyin input python scripts')
 parser.add_argument('model',type=str, choices=['bi','tri','word'], help='choose from bi, tri and word')
 parser.add_argument('--input',type=str, default='input.txt', help='choose an input file in input/')
 parser.add_argument('--output',type=str, default='output.txt', help='choose an output file in output/')
 args = parser.parse_args()
-main(args)
+get_result(args)

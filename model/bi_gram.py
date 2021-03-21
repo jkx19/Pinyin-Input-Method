@@ -14,9 +14,9 @@ def mat_gen_2():
     sys.stdout = sys.__stdout__
 
     charlist = []
-    charin = open('../pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
+    charin = open('pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
     c = charin.read()
-    charlist = list(c)
+    charlist = list(c) + ['b', 'e']
     charset = set(charlist)
     charin.close()
 
@@ -24,16 +24,19 @@ def mat_gen_2():
     emg = {}
     for ch in charlist:
         emg[ch] = 0
-        for cha in charlist:
-            trma[ch][cha] = 0
+        # for cha in charlist:
+        #     trma[ch][cha] = 0
 
-    newsf = open('../trainset/sina_news.txt', 'r')
+    newsf = open('trainset/sina_news.txt', 'r')
     news = newsf.readline()
     k = 0
     while news != '':
         news = news.strip()
+        news = 'b'+news+'e'
         for i in range(len(news) - 1):
             if news[i] in charset and news[i + 1] in charset:
+                if news[i+1] not in trma[news[i]]:
+                    trma[news[i]][news[i+1]] = 0
                 trma[news[i]][news[i+1]] += 1
                 emg[news[i]] += 1
 
@@ -54,11 +57,11 @@ def mat_gen_2():
             for c in trma[ch].keys():
                 trma[ch][c] /= emg[ch]
 
-    trmaout = open('../data/matrix.json', 'w')
+    trmaout = open('data/matrix.json', 'w')
     json.dump(trma, trmaout)
     trmaout.close
 
-    eout = open('../data/occur.json', 'w')
+    eout = open('data/occur.json', 'w')
     json.dump(emg, eout)
     eout.close()
 
@@ -76,31 +79,27 @@ def bigram(inputf, outputf):
     occur = json.load(occf)
     occf.close()
 
-    alpha = 1e-20
+    alpha = 1e-30
+    beta = 1e-70
 
-    def laplacian(matrix:dict):
-        for la in matrix.keys():
-            if occur[la] == 0:
-                for cur in matrix[la].keys():
-                    matrix[la][cur] = math.log(alpha)
+    def probability(w0, w1):
+        if occur[w0] == 0:
+            p = beta + alpha*occur[w1]
+        else:
+            if w1 not in matrix[w0].keys():
+                p = beta
             else:
-                for cur in matrix[la].keys():
-                    if matrix[la][cur] == 0:
-                        matrix[la][cur] = math.log(alpha*(occur[cur]+alpha))
-                    else:
-                        matrix[la][cur] = math.log(alpha*occur[cur] + (1-alpha)*matrix[la][cur])
+                p = alpha*occur[w1] + matrix[w0][w1]
+        return math.log(p)
 
-        # return matrix
-
-
-    # Laplacian smoothing
     def convert(pinlist:list) -> list:
 
         t = len(pinlist)
         possen = []
         for p in dic[pinlist[0]]:
             possen.append({})
-            possen[0][p] = [math.log(occur[p] + alpha), '']
+            pro = probability('b', p)
+            possen[0][p] = [pro, '']
         
         for i in range(1,t):
             possen.append({}) # possen[i] == {}
@@ -108,17 +107,19 @@ def bigram(inputf, outputf):
                 pcur = -float('inf')
                 las = ''
                 for la in possen[i-1].keys():
-                    if possen[i-1][la][0] + matrix[la][cur] > pcur:
-                        pcur = possen[i-1][la][0] + matrix[la][cur]
+                    pro = probability(la,cur)
+                    if possen[i-1][la][0] + pro > pcur:
+                        pcur = possen[i-1][la][0] + pro
                         las = la
                 possen[i][cur] = [pcur, las]
 
         lastchar = ''
         maxpos = float('-inf')
         for te in possen[t - 1].keys():
-            if possen[t-1][te][0] > maxpos:
+            pro = probability(te,'e')
+            if possen[t-1][te][0]+pro > maxpos:
                 lastchar = te
-                maxpos = possen[t-1][te][0]
+                maxpos = possen[t-1][te][0]+pro
         
         result = [lastchar]
         for i in range(1,t):
@@ -127,7 +128,7 @@ def bigram(inputf, outputf):
         
         return result
 
-    laplacian(matrix)
+    # laplacian(matrix)
     fin = open('input/'+inputf, 'r')
     line = fin.readline()
     while line != '':
