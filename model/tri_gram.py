@@ -7,15 +7,16 @@ from zhon.hanzi import punctuation
 import sys
 import math
 from pathlib import Path
+import heapq
 
 def mat_gen_3():
-    # n = 3
     sys.stdout = sys.__stdout__
     
     charlist = []
     charin = open('pinyintable/一二级汉字表.txt', 'r', encoding='gbk')
     c = charin.read()
     charlist = list(c)
+    charlist = charlist + ['b', 'e']
     charset = set(charlist)
     charin.close()
 
@@ -51,8 +52,11 @@ def mat_gen_3():
 
     for ch1 in charlist:
         for ch2 in charlist:
-            for c in trma[ch1][ch2].keys():
-                trma[ch1][ch2][c] /= emg[ch1][ch2]
+            if len(trma[ch1][ch2].keys()) == 0:
+                trma[ch1].pop(ch2)
+            else:
+                for c in trma[ch1][ch2].keys():
+                    trma[ch1][ch2][c] /= emg[ch1][ch2]
 
     trmaout = open(f'data/matrix_3.json', 'w')
     json.dump(trma, trmaout)
@@ -101,48 +105,58 @@ def trigram(inputf, outputf):
                         matrix[la][cur] = math.log(alpha*occur2[cur] + (1-alpha)*matrix[la][cur])
 
 
-    def laplacian3(la0, la1, cur) -> float:
+    def probability3(la0, la1, cur) -> float:
         if occur2[la1] == 0:
             return math.log(beta)
         
         elif occur3[la0][la1] == 0:
-            return math.log(beta + alpha*matrix2[la1][cur])
+            return math.log(beta + alpha*math.exp(probability2(la0, la1)))
 
         else:
             if cur not in matrix3[la0][la1].keys():
                 p = 0
             else:
                 p = matrix3[la0][la1][cur]
-            return math.log(beta + alpha*matrix2[la1][cur] + p)
+            return math.log(beta + alpha*math.exp(probability2(la0, la1)) + p)
 
+
+    def probability2(w0, w1):
+        if occur2[w0] == 0:
+            p = beta + alpha*occur2[w1]
+        else:
+            if w1 not in matrix2[w0].keys():
+                p = beta
+            else:
+                p = alpha*occur2[w1] + matrix2[w0][w1]
+        return math.log(p)
 
     def convert_2(pinlist:list) -> list:
         t = len(pinlist)
         possen = []
         for p in dic[pinlist[0]]:
             possen.append({})
-            possen[0][p] = [math.log(occur2[p] + alpha), '']
+            pro = probability2('b', p)
+            possen[0][p] = [pro, '']
         
         for i in range(1,t):
             possen.append({}) # possen[i] == {}
             for cur in dic[pinlist[i]]:
                 pcur = -float('inf')
-                las0 = ''
-                las1 = ''
+                las = ''
                 for la in possen[i-1].keys():
-                    if possen[i-1][la][0] + matrix2[la][cur] > pcur:
-                        pcur = possen[i-1][la][0] + matrix2[la][cur]
-                        las1 = la
-                        las0 = possen[i-1][las1][1]
-                possen[i][cur] = [pcur, las1]
-                possen[i-1][las1][1] = las0
+                    pro = probability2(la,cur)
+                    if possen[i-1][la][0] + pro > pcur:
+                        pcur = possen[i-1][la][0] + pro
+                        las = la
+                possen[i][cur] = [pcur, las]
 
         lastchar = ''
         maxpos = float('-inf')
         for te in possen[t - 1].keys():
-            if possen[t-1][te][0] > maxpos:
+            pro = probability2(te,'e')
+            if possen[t-1][te][0]+pro > maxpos:
                 lastchar = te
-                maxpos = possen[t-1][te][0]
+                maxpos = possen[t-1][te][0]+pro
         
         result = [lastchar]
         for i in range(1,t):
@@ -151,41 +165,83 @@ def trigram(inputf, outputf):
         
         return result
 
-
-    def convert_3(pinlist:list) -> list:
+    def gen_max_pro_list(pinlist:list, N: int) -> list:
         t = len(pinlist)
         possen = []
         for p in dic[pinlist[0]]:
             possen.append({})
-            possen[0][p] = [math.log(occur2[p] + alpha), '']
-
-        for p in dic[pinlist[1]]:
-            possen.append({})
-            pcur = -float('inf')
-            las = ''
-            for la in possen[0].keys():
-                if possen[0][la][0] + math.log(matrix2[la][p] + alpha) > pcur:
-                    pcur = possen[0][la][0] + math.log(matrix2[la][p] + alpha)
-                    las = la
-            possen[1][p] = [pcur, las]
-
+            pro = probability2('b', p)
+            possen[0][p] = [pro, '']
         
-        for i in range(2,t):
+        for i in range(1,t):
             possen.append({}) # possen[i] == {}
             for cur in dic[pinlist[i]]:
                 pcur = -float('inf')
-                las0 = ''
-                las1 = ''
-                for la0 in possen[i-2].keys():
-                    for la1 in possen[i-1].keys():
-                        probability = laplacian3(la0, la1, cur)
-                        prob = probability + possen[i-1][la1][0] + possen[i-2][la0][0]
-                        if prob > pcur:
-                            pcur = prob
-                            las1 = la1
-                            las0 = la0
-                possen[i][cur] = [pcur, las1]
-                # possen[i-1][las1][1] = las0
+                las = ''
+                for la in possen[i-1].keys():
+                    pro = probability2(la,cur)
+                    if possen[i-1][la][0] + pro > pcur:
+                        pcur = possen[i-1][la][0] + pro
+                        las = la
+                possen[i][cur] = [pcur, las]
+
+        heap = []
+        for te in possen[t - 1].keys():
+            pro = probability2(te,'e') + possen[t-1][te][0]
+            heapq.heappush(heap, (pro,te))
+            if len(heap) > N:
+                heapq.heappop(heap)
+        
+        result = []
+        for i in range(len(pinlist)):
+            result.append(set())
+
+        for lastchar_tu in heap:
+            lastchar = lastchar_tu[1]
+            result[t-1].add(lastchar)
+            for i in range(1,t):
+                lastchar = possen[t-i][lastchar][1]
+                result[t-i-1].add(lastchar)
+        return result
+
+
+    def convert_3(pinlist:list) -> list:
+
+        charlist = gen_max_pro_list(pinlist, 10)
+        # print(charlist)
+        t = len(pinlist)
+        possen = [{}]
+
+        for w1 in charlist[0]:
+            for w2 in charlist[1]:
+                pcur = probability3('b',w1,w2) + probability2('b', 'w1')
+                las = 'b' + w1
+                possen[0][w1+w2] = [pcur, las]
+            
+        for i in range(2,len(pinlist)):
+            possen.append({})
+            for w1 in charlist[i-1]:
+                for w2 in charlist[i]:
+                    pcur = -float('inf')
+                    las = ''
+                    for w0 in charlist[i-2]:
+                        p = probability3(w0,w1,w2)
+                        if possen[i-2][w0+w1][0] + p > pcur:
+                            pcur = possen[i-2][w0+w1][0] + p
+                            las = w0 + w1
+                    possen[i-1][w1+w2] = [pcur, las]
+        possen.append({})
+        for w1 in charlist[t-1]:
+            pcur = float('-inf')
+            las = ''
+            for w0 in charlist[t-2]:
+                p = probability3(w0,w1,'e') + possen[t-2][w0+w1][0]
+                if p > pcur:
+                    pcur = p
+                    las = w0+w1
+            possen[t-1][w1+'e'] = [pcur, las]
+
+        # print(possen)
 
         lastchar = ''
         maxpos = float('-inf')
@@ -194,17 +250,18 @@ def trigram(inputf, outputf):
                 lastchar = te
                 maxpos = possen[t-1][te][0]
         
-        result = [lastchar]
+        result = [lastchar[0]]
         for i in range(1,t):
             lastchar = possen[t-i][lastchar][1]
-            result.append(lastchar)
+            result.append(lastchar[0])
         
         return result
 
 
 
-    fin = open('input/'+inputf, 'r')
+    fin = open('input/input.txt', 'r')
     line = fin.readline()
+    k = 0
     while line != '':
         pinlist = re.split(' ', line.strip())
         length = len(pinlist)
@@ -213,6 +270,7 @@ def trigram(inputf, outputf):
         print('')
         if length <= 2:
             result = convert_2(pinlist)
+            
         else:
             result = convert_3(pinlist)
         for i in range(length):
@@ -220,6 +278,8 @@ def trigram(inputf, outputf):
         print('')
 
         line = fin.readline()
+        k = k + 1
+
 
 class tri_gram:
     
