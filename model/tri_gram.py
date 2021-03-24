@@ -33,6 +33,7 @@ def mat_gen_3():
     k = 0
     while news != '':
         news = news.strip()
+        news = 'b'+news+'e'
         
         for i in range(len(news) - 2):
             if news[i] in charset and news[i + 1] in charset and news[i + 2] in charset:
@@ -89,7 +90,7 @@ def trigram(inputf, outputf):
     occur3 = json.load(occf3)
     occf3.close()
 
-    alpha = 1e-20
+    alpha = 1e-40
     beta = 1e-45
 
     def laplacian(matrix:dict):
@@ -110,14 +111,14 @@ def trigram(inputf, outputf):
             return math.log(beta)
         
         elif occur3[la0][la1] == 0:
-            return math.log(beta + alpha*math.exp(probability2(la0, la1)))
+            return math.log(beta + alpha*math.exp(probability2(la1, cur)))
 
         else:
             if cur not in matrix3[la0][la1].keys():
                 p = 0
             else:
                 p = matrix3[la0][la1][cur]
-            return math.log(beta + alpha*math.exp(probability2(la0, la1)) + p)
+            return math.log(beta + alpha*math.exp(probability2(la1, cur)) + p)
 
 
     def probability2(w0, w1):
