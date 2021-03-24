@@ -12,8 +12,8 @@ import heapq
 from collections import deque
 
 def gen_word():
-    numwords = 10000
-    w = 8
+    numwords = 12000
+    w = 20
     sys.stdout = sys.__stdout__
 
     # 计算状态转移的概率，没有做拉普拉斯平滑，没有出现的字符的转出概率全部为0
@@ -79,8 +79,8 @@ def gen_word():
     def value(c0, c1) -> float:
         thh = 5e-4*charnum
         p0, p1 = trma[c0][c1], nma[c1][c0]
-        fr = math.log(emg_b[c0]/charnum*emg_a[c1]/charnum + 1e-20)
-        weight = (w-fr)/w
+        fr = math.log10(emg_b[c0]/charnum*emg_a[c1]/charnum + math.pow(0.1, w))
+        weight = -(-w-fr)/w
         if emg_b[c0] < thh and emg_a[c1] < thh:
             return 0
         else:
@@ -96,7 +96,7 @@ def gen_word():
                 if len(wordlist) > numwords:
                     heapq.heappop(wordlist)
 
-    outf = open('data/word/wordlist1.json', 'w')
+    outf = open('data/word/wordlist.json', 'w')
     dictin = open('data/char2pin.json', 'r')
     char2pin = json.load(dictin)
     dictin.close()
