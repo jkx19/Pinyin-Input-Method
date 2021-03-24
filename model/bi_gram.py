@@ -79,17 +79,17 @@ def bigram(inputf, outputf):
     occur = json.load(occf)
     occf.close()
 
-    alpha = 1e-30
-    beta = 1e-70
+    alpha = 1e-20
+    beta = 1e-45
 
     def probability(w0, w1):
         if occur[w0] == 0:
             p = beta + alpha*occur[w1]
         else:
             if w1 not in matrix[w0].keys():
-                p = beta
+                p = beta + alpha*occur[w1]
             else:
-                p = alpha*occur[w1] + matrix[w0][w1]
+                p = alpha*occur[w1] + matrix[w0][w1] + beta
         return math.log(p)
 
     def convert(pinlist:list) -> list:
